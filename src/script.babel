@@ -1,0 +1,289 @@
+const { createStore, combineReducers } = Redux;
+const { Provider, connect } = ReactRedux;
+
+const Button = (props) => <button className={`tablinks ${props.className}`} onClick={props.onClick}>{props.title}</button>
+const TableHeader = (props) => (<tr>
+	<th>{props.header1}</th>
+	<th>{props.header2}</th>
+</tr>
+)
+const TableRow = (props) => (<tr>
+	<td>{props.cell1}</td>
+	<td>{props.cell2}</td>
+</tr>
+)
+function TableBody(props) {
+	const noOfButton = Math.ceil(props.arr.length / 5);
+	console.log(noOfButton);
+	return (
+		<tbody>
+			{
+				props.arr.map((item, index) =>
+					<TableRow key={index + 1} cell1={item.cell1} cell2={item.cell2} />
+				)
+			}
+		</tbody>
+	)
+}
+const Prev = (props) => <button className={`tablinks ${props.className}`} onClick={props.onClick}>Prev</button>
+const Next = (props) => <button className={`tablinks ${props.className}`} onClick={props.onClick}>Next</button>
+class Pagination extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			pageCount: Math.ceil(this.props.arr.length / this.props.recordsPerPage)
+		}
+		this.prevPage = this.prevPage.bind(this);
+		this.nextPage = this.nextPage.bind(this);
+	}
+	prevPage() {
+		if (this.props.currentPageId !== 1) {
+			this.props.prevPage();
+		}
+	}
+	nextPage() {
+		if (this.props.currentPageId < this.state.pageCount) {
+			this.props.nextPage();
+		}
+	}
+	render() {
+		const ButtonArray = []
+		const noOfButton = this.state.pageCount;
+		for (let i = 0; i < noOfButton; i++) {
+			const activeClass = i + 1 === this.state.currentPageId ? 'active' : ''
+			ButtonArray.push(<Button className={activeClass} title={`page ${i + 1}`}
+				onClick={() => this.props.currentPage(i + 1)} />)
+		}
+		return (
+			<div className="page">
+				<Prev onClick={this.prevPage} />
+				{ButtonArray}
+				<Next onClick={this.nextPage} />
+			</div>
+		)
+	}
+}
+const mapStateToProps = state =>({
+  currentPageId:state.pageReducer.currentPageId
+})
+const mapDispatchToProps = dispatch => ({
+  currentPage:(pageId)=>dispatch(changePageAction(pageId)),
+  prevPage:()=>dispatch(prevPageAction()),
+  nextPage:()=>dispatch(nextPageAction())
+})
+const ConnectPage = connect(mapStateToProps,mapDispatchToProps)(Pagination) 
+
+
+class TableSort extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			arr: this.props.arr
+		}
+	}
+  
+	componentWillReceiveProps({currentPageId}) {
+    if(this.props.currentPageId!== currentPageId){     
+      const endno = (currentPageId * this.props.recordsPerPage);
+      const startno = (endno - this.props.recordsPerPage);
+      console.log(currentPageId, startno, endno)
+      const array1 = this.props.arr
+      const array2 = array1.filter(function (item) {
+        return (parseInt(item.id, 10) > startno && parseInt(item.id, 10) <= endno)
+      })
+      this.setState({ arr: array2 }) 
+    }
+	}
+	componentWillMount() {
+		this.props.currentPage(1)
+	}
+  
+	render() {
+		return (<div>
+			<table>
+				<TableHeader header1={this.props.header1}
+					header2={this.props.header2} />
+				<TableBody arr={this.state.arr} />
+			</table>
+			<ConnectPage recordsPerPage={this.props.recordsPerPage}
+				arr={this.props.arr} />
+		</div>
+		);
+	}
+}
+
+const mapTableStateToProps = state =>({
+  currentPageId: state.pageReducer.currentPageId
+})
+const mapTableDispatchToProps = dispatch => ({  
+  currentPage:(pageId)=>dispatch(changePageAction(pageId)),
+})
+
+const ConnectTableSort = connect(mapTableStateToProps,mapTableDispatchToProps)(TableSort)
+
+
+const arr = [
+	{
+		id: "1",
+		cell1: "Tab1",
+		cell2: "Tab1"
+	},
+	{
+		id: "2",
+		cell1: "Tab2",
+		cell2: "Tab2"
+	},
+	{
+		id: "3",
+		cell1: "Tab3",
+		cell2: "Tab3"
+	},
+	{
+		id: "4",
+		cell1: "Tab4",
+		cell2: "Tab4"
+	},
+	{
+		id: "5",
+		cell1: "Tab5",
+		cell2: "Tab5"
+	},
+	{
+		id: "6",
+		cell1: "Tab6",
+		cell2: "Tab6"
+	},
+	{
+		id: "7",
+		cell1: "Tab7",
+		cell2: "Tab7"
+	},
+	{
+		id: "8",
+		cell1: "Tab8",
+		cell2: "Tab8"
+	},
+	{
+		id: "9",
+		cell1: "Tab9",
+		cell2: "Tab9"
+	},
+	{
+		id: "10",
+		cell1: "Tab10",
+		cell2: "Tab10"
+	},
+	{
+		id: "11",
+		cell1: "Tab11",
+		cell2: "Tab11"
+	},
+	{
+		id: "12",
+		cell1: "Tab12",
+		cell2: "Tab12"
+	},
+	{
+		id: "13",
+		cell1: "Tab13",
+		cell2: "Tab13"
+	},
+	{
+		id: "14",
+		cell1: "Tab14",
+		cell2: "Tab14"
+	},
+	{
+		id: "15",
+		cell1: "Tab15",
+		cell2: "Tab15"
+	},
+	{
+		id: "16",
+		cell1: "Tab16",
+		cell2: "Tab16"
+	},
+	{
+		id: "17",
+		cell1: "Tab17",
+		cell2: "Tab17"
+	}
+];
+class ExampleTableSort extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			arr: arr
+		}
+	}
+	render() {
+		return (
+			<ConnectTableSort arr={this.state.arr}
+				header1="header1"
+				header2="header2"
+				recordsPerPage={5}
+			/>
+		);
+	}
+}
+
+/* redux functionality starts here */
+const initialState = {
+  currentPageId: 0  
+};
+
+const pageReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case "PREV":
+      {
+        return {
+          ...initialState,
+          currentPageId:state.currentPageId-1
+        };
+      }
+      break;
+    case "NEXT":
+      {
+        return {
+          ...initialState,
+          currentPageId:state.currentPageId+1         
+        };
+      }
+      break;
+      case "CURRENT_PAGE":
+      {
+        return {
+          ...initialState,
+          currentPageId:action.payload.currentPageId        
+        };
+      }
+      break;
+    default: {
+      return state;
+    }
+  }
+};
+const changePageAction = (pageId) => ({
+  type:"CURRENT_PAGE",
+  payload:{currentPageId: pageId }
+})
+const prevPageAction = () => ({
+  type: "PREV"  
+});
+const nextPageAction = () => ({
+  type: "NEXT"
+});
+
+const store = createStore(
+  combineReducers({
+    pageReducer: pageReducer
+  })
+);
+
+
+ReactDOM.render(
+  <Provider store={store}>
+    <ExampleTableSort />
+  </Provider>,
+  document.getElementById("app")
+);
